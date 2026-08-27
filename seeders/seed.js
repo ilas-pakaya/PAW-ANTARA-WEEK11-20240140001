@@ -20,12 +20,12 @@ async function seed() {
     const existingProducts = await Product.count();
     if (existingProducts === 0) {
       await Product.bulkCreate([
-        { name: 'Kaos Polos Cotton Combed', description: 'Bahan adem, cocok sehari-hari', price: 75000, stock: 50 },
-        { name: 'Kemeja Flanel', description: 'Motif kotak-kotak, bahan tebal', price: 150000, stock: 20 },
-        { name: 'Celana Chino Slim Fit', description: 'Warna khaki, bahan stretch', price: 180000, stock: 15 },
-        { name: 'Sepatu Sneakers Canvas', description: 'Cocok buat kasual', price: 220000, stock: 30 },
-        { name: 'Topi Baseball', description: 'Adjustable, banyak warna', price: 45000, stock: 0 },
-        { name: 'Jaket Bomber', description: 'Bahan tebal, hangat', price: 250000, stock: 8 },
+        { name: 'Kaos Polos Cotton Combed', description: 'Bahan adem, cocok sehari-hari', price: 75000, stock: 50, category: 'Atasan' },
+        { name: 'Kemeja Flanel', description: 'Motif kotak-kotak, bahan tebal', price: 150000, stock: 20, category: 'Atasan' },
+        { name: 'Celana Chino Slim Fit', description: 'Warna khaki, bahan stretch', price: 180000, stock: 15, category: 'Bawahan' },
+        { name: 'Sepatu Sneakers Canvas', description: 'Cocok buat kasual', price: 220000, stock: 30, category: 'Sepatu' },
+        { name: 'Topi Baseball', description: 'Adjustable, banyak warna', price: 45000, stock: 0, category: 'Aksesoris' },
+        { name: 'Jaket Bomber', description: 'Bahan tebal, hangat', price: 250000, stock: 8, category: 'Atasan' },
       ]);
       console.log('Produk dummy berhasil ditambahin');
     } else {

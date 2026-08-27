@@ -9,6 +9,7 @@ const Product = sequelize.define(
     description: { type: DataTypes.TEXT, allowNull: true },
     price: { type: DataTypes.INTEGER, allowNull: false }, // rupiah, tanpa desimal
     stock: { type: DataTypes.INTEGER, defaultValue: 0 },
+    category: { type: DataTypes.STRING, defaultValue: 'Umum' }, // dipake buat filter & badge kategori
   },
   { tableName: 'products', timestamps: true }
 );

@@ -1,6 +1,8 @@
 const productStore = createStore({
   products: window.__INITIAL_PRODUCTS__ || [],
   filter: 'all', // 'all' | 'available' | 'out'
+  searchQuery: '', // dipake buat cari nama produk
+  category: 'all', // 'all' | 'Atasan' | 'Bawahan' | 'Sepatu' | 'Aksesoris'
 });
 
 // komponen badge & card versi JS, paralel sama versi EJS di views/partials
@@ -9,24 +11,36 @@ function renderBadge({ label, color }) {
     green: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700',
     red: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700',
     gray: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
+    blue: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700',
+    purple: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700',
   };
   const classes = colorMap[color] || colorMap.gray;
   return `<span class="inline-block px-2 py-1 text-xs font-semibold rounded-full border ${classes}">${label}</span>`;
 }
 
+// map kategori -> warna badge, dipake bareng-bareng sama badge stok (pola sama kaya EJS)
+const CATEGORY_COLOR_MAP = { Atasan: 'blue', Bawahan: 'purple', Sepatu: 'gray', Aksesoris: 'gray' };
+
 function renderProductCard(product) {
   const isAvailable = product.stock > 0;
-  const badge = renderBadge({
+  const stockBadge = renderBadge({
     label: isAvailable ? 'Tersedia' : 'Habis',
     color: isAvailable ? 'green' : 'red',
   });
 
+  const categoryLabel = product.category || 'Umum';
+  const categoryBadge = renderBadge({
+    label: categoryLabel,
+    color: CATEGORY_COLOR_MAP[categoryLabel] || 'gray',
+  });
+
   return `
-    <div class="product-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow" data-stock="${product.stock}">
+    <div class="product-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow" data-stock="${product.stock}" data-category="${categoryLabel}">
       <div class="flex items-start justify-between mb-2">
         <h3 class="font-semibold text-gray-800 dark:text-gray-100">${product.name}</h3>
-        ${badge}
+        ${stockBadge}
       </div>
+      <div class="mb-2">${categoryBadge}</div>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">${product.description || 'Tanpa deskripsi'}</p>
       <div class="flex items-center justify-between mb-3">
         <span class="text-blue-600 dark:text-blue-400 font-bold">Rp${Number(product.price).toLocaleString('id-ID')}</span>
@@ -46,9 +60,24 @@ function renderProductCard(product) {
 }
 
 function getFilteredProducts(state) {
-  if (state.filter === 'available') return state.products.filter((p) => p.stock > 0);
-  if (state.filter === 'out') return state.products.filter((p) => p.stock === 0);
-  return state.products;
+  let result = state.products;
+
+  // 1. filter stok (tombol Semua/Tersedia/Habis)
+  if (state.filter === 'available') result = result.filter((p) => p.stock > 0);
+  if (state.filter === 'out') result = result.filter((p) => p.stock === 0);
+
+  // 2. filter kategori (dropdown)
+  if (state.category !== 'all') {
+    result = result.filter((p) => (p.category || 'Umum') === state.category);
+  }
+
+  // 3. search by nama produk (case-insensitive)
+  if (state.searchQuery.trim() !== '') {
+    const q = state.searchQuery.trim().toLowerCase();
+    result = result.filter((p) => p.name.toLowerCase().includes(q));
+  }
+
+  return result;
 }
 
 function renderProductList(state) {
@@ -83,11 +112,6 @@ document.getElementById('filter-buttons').addEventListener('click', (e) => {
   btn.classList.add('bg-blue-600', 'text-white');
 });
 
-/**
- * event delegation buat tombol "Tambah ke Keranjang" - dipasang di container,
- * bukan per-tombol, soalnya tombolnya di-render ulang tiap kali filter berubah.
- * Ini yang nyambungin state produk ke state cart (addToCart ada di cart.js).
- */
 document.getElementById('product-list').addEventListener('click', (e) => {
   const btn = e.target.closest('.add-to-cart-btn');
   if (!btn || btn.disabled) return;
@@ -100,4 +124,14 @@ document.getElementById('product-list').addEventListener('click', (e) => {
 
   // buka keranjang otomatis biar user liat item baru masuk
   cartStore.setState({ isOpen: true });
+});
+
+// --- search input: tiap ketikan update searchQuery di state, langsung re-render ---
+document.getElementById('search-input').addEventListener('input', (e) => {
+  productStore.setState({ searchQuery: e.target.value });
+});
+
+// --- dropdown kategori: update state category ---
+document.getElementById('category-select').addEventListener('change', (e) => {
+  productStore.setState({ category: e.target.value });
 });

@@ -12,13 +12,13 @@ async function getProducts(req, res) {
 
 async function addProduct(req, res) {
   try {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category } = req.body;
 
     if (!name || price === undefined) {
       return sendResponse(res, { code: 400, success: false, message: 'name dan price wajib diisi' });
     }
 
-    const product = await Product.create({ name, description, price, stock: stock || 0 });
+    const product = await Product.create({ name, description, price, stock: stock || 0, category: category || 'Umum' });
     return sendResponse(res, { code: 201, message: 'Produk berhasil ditambahkan', data: product });
   } catch (err) {
     return sendResponse(res, { code: 500, success: false, message: err.message });
@@ -28,7 +28,7 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category } = req.body;
 
     const product = await Product.findByPk(id);
     if (!product) {
@@ -39,6 +39,7 @@ async function updateProduct(req, res) {
     if (description !== undefined) product.description = description;
     if (price !== undefined) product.price = price;
     if (stock !== undefined) product.stock = stock;
+    if (category !== undefined) product.category = category;
     await product.save();
 
     return sendResponse(res, { message: 'Produk berhasil diupdate', data: product });

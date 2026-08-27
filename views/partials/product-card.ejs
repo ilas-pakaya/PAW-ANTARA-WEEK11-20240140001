@@ -2,14 +2,23 @@
 const isAvailable = product.stock > 0;
 const badgeLabel = isAvailable ? 'Tersedia' : 'Habis';
 const badgeColor = isAvailable ? 'green' : 'red';
+
+// badge kategori pake badge.ejs yang sama (generic), cuma beda label & warna
+const categoryColorMap = { Atasan: 'blue', Bawahan: 'purple', Sepatu: 'gray', Aksesoris: 'gray' };
+const categoryLabel = product.category || 'Umum';
+const categoryColor = categoryColorMap[categoryLabel] || 'gray';
 %>
 <div
   class="product-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
   data-stock="<%= product.stock %>"
+  data-category="<%= categoryLabel %>"
 >
   <div class="flex items-start justify-between mb-2">
     <h3 class="font-semibold text-gray-800 dark:text-gray-100"><%= product.name %></h3>
     <%- include('badge', { label: badgeLabel, color: badgeColor }) %>
+  </div>
+  <div class="mb-2">
+    <%- include('badge', { label: categoryLabel, color: categoryColor }) %>
   </div>
   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3"><%= product.description || 'Tanpa deskripsi' %></p>
   <div class="flex items-center justify-between mb-3">
